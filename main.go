@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -14,12 +15,9 @@ import (
 	"github.com/gen2brain/beeep"
 )
 
-// default timeout 600s (10 mins)
-const timeout int = 600
-
 // tcpHealthCheck will return true if the dest is up, or false if is down. host format should be <host>:<port>
-func tcpHealthCheck(host string) (bool, error) {
-	conn, err := net.DialTimeout("tcp", host, time.Second*time.Duration(timeout))
+func tcpHealthCheck(host string, timeout time.Duration) (bool, error) {
+	conn, err := net.DialTimeout("tcp", host, timeout)
 	if err != nil {
 		return false, fmt.Errorf("failed to connect: %s", err)
 	}
@@ -73,13 +71,19 @@ func parseRawURL(rawurl string) (host, port string, err error) {
 var vfs embed.FS // virtual FileSystem
 
 func main() {
-	args := os.Args
-	if len(args) != 2 {
+	// process flags
+	timeout := flag.Duration("timeout", 10*time.Minute, "connection timeout. valid time units are ns, us, ms, s, m, h")
+	flag.Parse()
+
+	// process args
+	args := flag.Args() // this strips out the flags from the arguments of the program
+	if len(args) != 1 {
+		fmt.Printf("%#v\n", args)
 		log.Fatalf("error: you should pass <host>:<port> or <ip>:<port> as argument\n")
 	}
-	host, port, err := parseRawURL(args[1]) // we parse it to get rid of things like the scheme
+	host, port, err := parseRawURL(args[0]) // we parse it to get rid of things like the scheme
 	if err != nil {
-		log.Fatalf("Could not parse raw url: %s, error: %v", args[1], err)
+		log.Fatalf("Could not parse raw url: %s, error: %v", args[0], err)
 	}
 
 	validFormat := checkFormat(host + ":" + port)
@@ -88,7 +92,8 @@ func main() {
 	}
 
 	// we save this error to print on the notification
-	up, errCheck := tcpHealthCheck(host + ":" + port)
+	fmt.Printf("Timeout: %s\n", *timeout)
+	up, errCheck := tcpHealthCheck(host+":"+port, *timeout)
 	if errCheck != nil {
 		log.Printf("error checking %s:%s: %v\n", host, port, err)
 	}

@@ -8,13 +8,14 @@ Instead of trying several times to connect, or use **netcat** to warn you, you c
 
 **waitfor** will try to connect to the `host:port`, with a default timeout of **10m** (configurable). Wheter it success or fails, **waitfor** will send you a nice OS notification with the result, and a wake-up sound.
 
-## Usage 
+## Usage
 ```bash
 waitfor google.com:80
 ```
 
+Specifying timeout value (valid time units are "ns", "us", "ms", "s", "m", "h")
 ```bash
-waitfor 8.8.8.8:53 -timeout 1m
+waitfor -timeout 1m 8.8.8.8:53 
 ```
 
 ## Compatibility
@@ -22,7 +23,6 @@ As **waitfor** is written in go, is totally compatible with linux, mac & windows
 
 ## TODOS
 - use multiple regexps (1 for scheme://host:port, another for host:port, another for ip:port)
-- flags
 - progress bar
 - sound
 - test in windows & mac
