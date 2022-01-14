@@ -21,8 +21,8 @@ waitfor 8.8.8.8:53 -timeout 1m
 As **waitfor** is written in go, is totally compatible with linux, mac & windows. Just download your OS/ARCH compatible binary from Releases
 
 ## TODOS
+- use multiple regexps (1 for scheme://host:port, another for host:port, another for ip:port)
 - flags
 - progress bar
-- notifications
 - sound
 - test in windows & mac
