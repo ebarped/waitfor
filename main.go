@@ -12,12 +12,13 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/cheggaaa/pb/v3"
 	"github.com/gen2brain/beeep"
 )
 
 // tcpHealthCheck will return true if the dest is up, or false if is down. host format should be <host>:<port>
 func tcpHealthCheck(host string, timeout time.Duration) (bool, error) {
-	conn, err := net.DialTimeout("tcp", host, timeout)
+	conn, err := net.Dial("tcp", host)
 	if err != nil {
 		return false, fmt.Errorf("failed to connect: %s", err)
 	}
@@ -71,6 +72,8 @@ func parseRawURL(rawurl string) (host, port string, err error) {
 var vfs embed.FS // virtual FileSystem
 
 func main() {
+	var up bool
+	var errCheck error
 	// process flags
 	timeout := flag.Duration("timeout", 10*time.Minute, "connection timeout. valid time units are ns, us, ms, s, m, h")
 	flag.Parse()
@@ -81,6 +84,7 @@ func main() {
 		fmt.Printf("%#v\n", args)
 		log.Fatalf("error: you should pass <host>:<port> or <ip>:<port> as argument\n")
 	}
+
 	host, port, err := parseRawURL(args[0]) // we parse it to get rid of things like the scheme
 	if err != nil {
 		log.Fatalf("Could not parse raw url: %s, error: %v", args[0], err)
@@ -91,12 +95,20 @@ func main() {
 		log.Fatalf("error: the format of the host must be <host>:<port> or <ip>:<port>\n")
 	}
 
-	// we save this error to print on the notification
-	fmt.Printf("Timeout: %s\n", *timeout)
-	up, errCheck := tcpHealthCheck(host+":"+port, *timeout)
-	if errCheck != nil {
-		log.Printf("error checking %s:%s: %v\n", host, port, err)
+	log.Printf("Check %s:%s, Timeout: %s\n", host, port, *timeout)
+
+	// progress bar
+	bar := pb.Simple.Start(int(timeout.Seconds()))
+
+	for i := 0; i < int(timeout.Seconds()); i++ {
+		up, errCheck = tcpHealthCheck(host+":"+port, *timeout)
+		time.Sleep(1 * time.Second)
+		bar.Increment()
+		if up {
+			break
+		}
 	}
+	bar.Finish()
 
 	if up {
 		log.Printf("%s:%s is up!\n", host, port)

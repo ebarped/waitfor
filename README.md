@@ -23,6 +23,5 @@ As **waitfor** is written in go, is totally compatible with linux, mac & windows
 
 ## TODOS
 - use multiple regexps (1 for scheme://host:port, another for host:port, another for ip:port)
-- progress bar
 - sound
 - test in windows & mac
