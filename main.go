@@ -16,6 +16,8 @@ import (
 	"github.com/gen2brain/beeep"
 )
 
+var Version = "version is set by build process"
+
 // tcpHealthCheck will return true if the dest is up, or false if is down. host format should be <host>:<port>
 func tcpHealthCheck(host string, timeout time.Duration) (bool, error) {
 	conn, err := net.Dial("tcp", host)
