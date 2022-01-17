@@ -2,7 +2,11 @@ module github.com/ebarped/waitfor
 
 go 1.17
 
-require github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
+require (
+	github.com/gen2brain/beeep v0.0.0-20210529141713-5586760f0cc1
+	github.com/hajimehoshi/oto v1.0.1
+	github.com/tosone/minimp3 v1.0.1
+)
 
 require (
 	github.com/VividCortex/ewma v1.1.1 // indirect
@@ -10,6 +14,9 @@ require (
 	github.com/mattn/go-colorable v0.1.8 // indirect
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	golang.org/x/exp v0.0.0-20190306152737-a1d7652674e8 // indirect
+	golang.org/x/image v0.0.0-20190227222117-0694c2d4d067 // indirect
+	golang.org/x/mobile v0.0.0-20190415191353-3e0bab5405d6 // indirect
 )
 
 require (
