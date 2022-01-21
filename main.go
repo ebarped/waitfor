@@ -19,8 +19,8 @@ import (
 var Version = "version is set by build process"
 
 // tcpHealthCheck will return true if the dest is up, or false if is down. host format should be <host>:<port>
-func tcpHealthCheck(host string, timeout time.Duration) (bool, error) {
-	conn, err := net.Dial("tcp", host)
+func tcpHealthCheck(host string) (bool, error) {
+	conn, err := net.DialTimeout("tcp", host, time.Second)
 	if err != nil {
 		return false, fmt.Errorf("failed to connect: %s", err)
 	}
@@ -96,20 +96,27 @@ func main() {
 	if !validFormat {
 		log.Fatalf("error: the format of the host must be <host>:<port> or <ip>:<port>\n")
 	}
-
-	log.Printf("Check %s:%s, Timeout: %s\n", host, port, *timeout)
+	tOut := int(timeout.Seconds())
+	log.Printf("Check %s:%s, Timeout: %d\n", host, port, tOut)
 
 	// progress bar
-	bar := pb.Simple.Start(int(timeout.Seconds()))
 
-	for i := 0; i < int(timeout.Seconds()); i++ {
-		up, errCheck = tcpHealthCheck(host+":"+port, *timeout)
-		time.Sleep(1 * time.Second)
+	bar := pb.Simple.Start(tOut)
+
+	for i := 0; i < tOut; i++ {
 		bar.Increment()
+
+		up, errCheck = tcpHealthCheck(host + ":" + port)
+		if err != nil {
+			log.Println(err)
+		}
 		if up {
 			break
 		}
+
+		time.Sleep(1 * time.Second)
 	}
+
 	bar.Finish()
 
 	if up {
