@@ -18,10 +18,6 @@ Specifying timeout value (valid time units are "ns", "us", "ms", "s", "m", "h")
 waitfor -timeout 1m 8.8.8.8:53 
 ```
 
-## Compatibility
-As **waitfor** is written in go, is totally compatible with linux, mac & windows. Just download your OS/ARCH compatible binary from Releases
-
 ## TODOS
 - use multiple regexps (1 for scheme://host:port, another for host:port, another for ip:port)
-- sound
 - test in windows & mac
