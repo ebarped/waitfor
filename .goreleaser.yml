@@ -8,34 +8,17 @@ builds:
   - env:
       - CGO_ENABLED=1
     goos:
-      - darwin
       - linux
-      - windows
     goarch:
       - amd64
-      - "386"
-      - arm
-      - arm64
     goarm:
       - "7"
     ldflags:
       - -s -w -X=github.com/ebarped/waitfor/main.Version={{.Version}} # go tool link flags
-    ignore:
-      - goos: windows
-        goarch: arm
-      - goos: windows
-        goarch: arm64
-      - goos: windows
-        goarch: "386"
 archives:
   - format_overrides:
-    - goos: windows
-      format: zip
     replacements:
-      darwin: Darwin
       linux: Linux
-      windows: Windows
-      386: i386
       amd64: x86_64
 release:
 snapshot:

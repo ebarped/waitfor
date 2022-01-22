@@ -18,6 +18,12 @@ Specifying timeout value (valid time units are "s", "m", "h")
 waitfor -timeout 1m 8.8.8.8:53 
 ```
 
+## Crosscompile for windows/darwin
+We use github.com/crazy-max/xgo to crosscompile with CGO and additional compilers.
+```
+xgo '-targets=windows/*,darwin/*' .
+```
+
 ## TODOS
 - use multiple regexps (1 for scheme://host:port, another for host:port, another for ip:port)
 - test in windows & mac
