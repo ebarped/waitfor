@@ -49,7 +49,7 @@ func main() {
 		log.Fatalf("error: the format of the host must be <host>:<port> or <ip>:<port>\n")
 	}
 	tOut := int(timeout.Seconds())
-	log.Printf("Check %s:%s, Timeout: %d\n", host, port, tOut)
+	log.Printf("Check %s:%s, Timeout: %ds\n", host, port, tOut)
 
 	// progress bar
 	bar := pb.Simple.Start(tOut)

@@ -13,7 +13,7 @@ Instead of trying several times to connect, or use **netcat** to warn you, you c
 waitfor google.com:80
 ```
 
-Specifying timeout value (valid time units are "ns", "us", "ms", "s", "m", "h")
+Specifying timeout value (valid time units are "s", "m", "h")
 ```bash
 waitfor -timeout 1m 8.8.8.8:53 
 ```
