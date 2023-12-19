@@ -4,7 +4,6 @@ import (
 	"embed"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/url"
@@ -14,19 +13,22 @@ import (
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/gen2brain/beeep"
-	"github.com/hajimehoshi/oto"
-	"github.com/tosone/minimp3"
+	"github.com/gopxl/beep"
+	"github.com/gopxl/beep/mp3"
+	"github.com/gopxl/beep/speaker"
 )
 
 var Version = "version is set by build process"
 
-//embed the assets folder
+// embed the assets folder
+//
 //go:embed assets
 var vfs embed.FS // virtual FileSystem
 
 func main() {
 	var up bool
 	var errCheck error
+
 	// process flags
 	timeout := flag.Duration("timeout", 10*time.Minute, "connection timeout. valid time units are ns, us, ms, s, m, h")
 	flag.Parse()
@@ -48,59 +50,64 @@ func main() {
 	if !validFormat {
 		log.Fatalf("error: the format of the host must be <host>:<port> or <ip>:<port>\n")
 	}
+
 	tOut := int(timeout.Seconds())
 	log.Printf("Check %s:%s, Timeout: %ds\n", host, port, tOut)
 
-	// progress bar
-	bar := pb.Simple.Start(tOut)
-
-	for i := 0; i < tOut; i++ {
-		bar.Increment()
-		up, errCheck = tcpHealthCheck(host + ":" + port)
-		if err != nil {
-			log.Println(err)
-		}
-		if up {
-			break
-		}
-		time.Sleep(1 * time.Second)
+	err = copyFileFromVFS("assets/icons/up.png", tmpDir+"/up.png", vfs)
+	if err != nil {
+		panic(err)
 	}
 
-	bar.Finish()
-
-	if up {
-		log.Printf("%s:%s is up!\n", host, port)
-		err := copyFileFromVFS("assets/icons/up.png", tmpDir+"/up.png", vfs)
-		if err != nil {
-			panic(err)
-		}
-
-		err = beeep.Notify("Up!", fmt.Sprintf("%s:%s is Up!", host, port), tmpDir+"/up.png")
-		if err != nil {
-			panic(err)
-		}
-
-	} else {
-		log.Printf("%s:%s is down...\n", host, port)
-		err := copyFileFromVFS("assets/icons/down.png", tmpDir+"/down.png", vfs)
-		if err != nil {
-			panic(err)
-		}
-		err = beeep.Notify("Down!", fmt.Sprintf("%s:%s is Down...(%s)", host, port, errCheck), tmpDir+"/down.png")
-		if err != nil {
-			panic(err)
-		}
+	err = copyFileFromVFS("assets/icons/down.png", tmpDir+"/down.png", vfs)
+	if err != nil {
+		panic(err)
 	}
 
 	err = copyFileFromVFS("assets/sounds/notification.mp3", tmpDir+"/notification.mp3", vfs)
 	if err != nil {
 		panic(err)
 	}
-	err = playSound(tmpDir + "/notification.mp3")
+
+	// progress bar
+	bar := pb.Simple.Start(tOut)
+
+	for i := 0; i < tOut; i++ {
+		bar.Increment()
+
+		up, errCheck = tcpHealthCheck(host + ":" + port)
+		if err != nil {
+			log.Println(err)
+		}
+
+		if up {
+			bar.Finish()
+			log.Printf("%s:%s is up!\n", host, port)
+
+			err = beeep.Notify("Up!", fmt.Sprintf("%s:%s is Up!", host, port), tmpDir+"/up.png")
+			if err != nil {
+				panic(err)
+			}
+
+			// aqui esta el tema
+			err = playSound(tmpDir + "/notification.mp3")
+			if err != nil {
+				panic(err)
+			}
+			//
+
+			os.Exit(0)
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+
+	log.Printf("%s:%s is down...\n", host, port)
+
+	err = beeep.Notify("Down!", fmt.Sprintf("%s:%s is Down...(%s)", host, port, errCheck), tmpDir+"/down.png")
 	if err != nil {
 		panic(err)
 	}
-	os.Exit(0)
 }
 
 // parseRawURL takes an url in any of the following forms:
@@ -147,7 +154,7 @@ func copyFileFromVFS(src, dest string, vfs embed.FS) error {
 	if err != nil {
 		return fmt.Errorf("error opening file from embedded fs: %v", err)
 	}
-	err = ioutil.WriteFile(dest, f, 0o644)
+	err = os.WriteFile(dest, f, 0o644)
 	if err != nil {
 		return fmt.Errorf("error writing file from embedded fs: %v", err)
 	}
@@ -155,30 +162,25 @@ func copyFileFromVFS(src, dest string, vfs embed.FS) error {
 }
 
 func playSound(sound string) error {
-	var file []byte
-	file, err := ioutil.ReadFile(sound)
+	f, err := os.Open(sound)
 	if err != nil {
 		return err
 	}
 
-	dec, data, err := minimp3.DecodeFull(file)
+	streamer, format, err := mp3.Decode(f)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
+	defer streamer.Close()
 
-	context, err := oto.NewContext(dec.SampleRate, dec.Channels, 2, 1024)
-	if err != nil {
-		return err
-	}
+	done := make(chan bool)
 
-	player := context.NewPlayer()
-	player.Write(data)
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
+		done <- true
+	})))
 
-	<-time.After(time.Second)
+	<-done
 
-	dec.Close()
-	if err = player.Close(); err != nil {
-		return err
-	}
 	return nil
 }

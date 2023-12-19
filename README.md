@@ -1,6 +1,13 @@
 # waitfor
 Wait until a system:port is up while you mind your own business... 
 
+## Prerequisites
+https://github.com/ebitengine/oto#prerequisite
+
+```bash
+sudo apt install libasound2-dev
+```
+
 ## Use Case
 A lot of times you need to wait for a host machine to be up...
 e.g: Create an instance in the cloud and wait until the ssh port is up so you can connect.

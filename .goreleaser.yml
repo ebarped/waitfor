@@ -15,11 +15,6 @@ builds:
       - "7"
     ldflags:
       - -s -w -X=github.com/ebarped/waitfor/main.Version={{.Version}} # go tool link flags
-archives:
-  - format_overrides:
-    replacements:
-      linux: Linux
-      amd64: x86_64
 release:
 snapshot:
   name_template: "{{ .Tag }}-next"
