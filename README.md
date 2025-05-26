@@ -13,7 +13,7 @@ A lot of times you need to wait for a host machine to be up...
 e.g: Create an instance in the cloud and wait until the ssh port is up so you can connect.
 Instead of trying several times to connect, or use **netcat** to warn you, you can use **waitfor**!
 
-**waitfor** will try to connect to the `host:port`, with a default timeout of **10m** (configurable). Wheter it success or fails, **waitfor** will send you a nice OS notification with the result, and a wake-up sound.
+**waitfor** will try to connect to the `host:port`, with a default timeout of **10m** (configurable). Whether it success or fails, **waitfor** will send you a nice OS notification with the result, and a wake-up sound.
 
 ## Usage
 ```bash
