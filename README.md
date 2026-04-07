@@ -32,5 +32,6 @@ xgo '-targets=windows/*,darwin/*' .
 ```
 
 ## TODOS
+- Notification says 'Unknown App' on title, change it!
 - use multiple regexps (1 for scheme://host:port, another for host:port, another for ip:port)
 - test in windows & mac
