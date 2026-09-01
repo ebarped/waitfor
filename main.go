@@ -29,6 +29,8 @@ func main() {
 	var up bool
 	var errCheck error
 
+	beeep.AppName = "waitfor"
+
 	// process flags
 	timeout := flag.Duration("timeout", 10*time.Minute, "connection timeout. valid time units are ns, us, ms, s, m, h")
 	flag.Parse()
